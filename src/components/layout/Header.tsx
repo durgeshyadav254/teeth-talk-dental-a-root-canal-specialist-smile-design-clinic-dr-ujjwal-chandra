@@ -24,6 +24,17 @@ export function Header() {
     }
   }, [open])
 
+  // Close drawer when viewport becomes desktop-sized
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    const onChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      if (e.matches) setOpen(false)
+    }
+    onChange(mq)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-500 ${
@@ -33,7 +44,7 @@ export function Header() {
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
-        <Link to="/" className="group flex items-center gap-3" onClick={() => setOpen(false)}>
+        <Link to="/" className="group flex shrink-0 items-center gap-3" onClick={() => setOpen(false)}>
           <Monogram size="sm" />
           <div className="leading-tight">
             <p className="font-display text-[1.05rem] text-emerald tracking-tight">
@@ -45,13 +56,17 @@ export function Header() {
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-7 xl:flex" aria-label="Primary">
+        {/* Desktop / large tablet: full navbar */}
+        <nav
+          className="hidden lg:flex flex-1 items-center justify-center gap-5 xl:gap-7"
+          aria-label="Primary"
+        >
           {navLinks.map((link) => (
             <NavLink
               key={link.href}
               to={link.href}
               className={({ isActive }) =>
-                `font-sans text-[13px] tracking-wide transition-colors duration-300 ${
+                `whitespace-nowrap font-sans text-[12px] xl:text-[13px] tracking-wide transition-colors duration-300 ${
                   isActive ? 'text-emerald' : 'text-ink-muted hover:text-emerald'
                 }`
               }
@@ -61,16 +76,18 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 lg:flex">
-          <Button to="/consultation" variant="primary" className="!py-3 !px-6">
+        <div className="hidden shrink-0 items-center gap-3 lg:flex">
+          <Button to="/consultation" variant="primary" className="!py-3 !px-5 xl:!px-6">
             Request a Consultation
           </Button>
         </div>
 
+        {/* Mobile / tablet only */}
         <button
           type="button"
-          className="inline-flex h-11 w-11 items-center justify-center border border-border text-emerald xl:hidden"
+          className="inline-flex h-11 w-11 shrink-0 items-center justify-center border border-border text-emerald lg:hidden"
           aria-label={open ? 'Close menu' : 'Open menu'}
+          aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
         >
           {open ? <X size={20} /> : <Menu size={20} />}
@@ -84,7 +101,7 @@ export function Header() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.35 }}
-            className="border-t border-border bg-paper paper-grain xl:hidden"
+            className="border-t border-border bg-paper paper-grain lg:hidden"
           >
             <nav className="mx-auto flex max-w-7xl flex-col gap-1 px-5 py-6" aria-label="Mobile">
               {navLinks.map((link) => (
